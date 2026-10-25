@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "city.cestchaud/paris",
+  "title": "C'est Chaud à Paris",
+  "description": "Read-only Paris catalogue: events and dates, places, free things, booking links.",
+  "version": "1.0.0",
+  "websiteUrl": "https://cestchaud.city/for-agents",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://cestchaud.city/mcp"
+    }
+  ]
+}
