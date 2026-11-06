@@ -68,20 +68,16 @@ or your client's equivalent:
 > silently. Earlier versions of this README omitted it. If the server never
 > appears, this is why.
 
-**A client that only speaks stdio** — [`mcp-remote`](https://www.npmjs.com/package/mcp-remote)
-bridges it. We publish no npm package of our own, because it would contain
-nothing but this:
+**A client that only speaks stdio** needs a bridge. We publish no npm package
+of our own, because it would do nothing but forward to the URL above;
+[`mcp-remote`](https://www.npmjs.com/package/mcp-remote) already does that job,
+and its own README has the current invocation.
 
-```json
-{
-  "mcpServers": {
-    "cestchaud-paris": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://cestchaud.city/mcp"]
-    }
-  }
-}
-```
+Deliberately not printed here: a ready-to-paste launcher line. A command that
+installs the newest build of a package and runs it is a different trust
+decision from adding an endpoint to a config file, and it should be made
+knowingly, against a version you chose, rather than copied out of our
+documentation.
 
 **Check it answers** — a `GET` returns 405 because the protocol speaks POST
 (a browser is redirected to the documentation instead):
