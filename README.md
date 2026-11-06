@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="assets/wordmark.png" alt="C'est Chaud à Paris" width="300">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/wordmark-paper.png">
+  <img src="assets/wordmark.png" alt="C'est Chaud à Paris" width="300">
+</picture>
 
 ### Paris, for agents
 
