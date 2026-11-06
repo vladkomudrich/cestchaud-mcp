@@ -255,9 +255,8 @@ not covered by that licence.
 | `.mcp.json` | The server entry, in the shape a client config wants |
 | `examples/` | curl calls you can paste |
 | `server.json` | The MCP registry manifest |
-| `scripts/generate.mjs` | Regenerates the tables above from the live catalogue |
+| `.github/workflows/` | Re-stamps the tables above from the live catalogue, weekly |
 
 Every table and count in this README is stamped from
-`GET https://cestchaud.city/api/agent/v1` by that script, which a weekly
-workflow re-runs. Nothing here states a fact about the server by hand — the
+`GET https://cestchaud.city/api/agent/v1` by that workflow, weekly. Nothing here states a fact about the server by hand — the
 one sentence that did drifted for twelve days when a seventh tool shipped.

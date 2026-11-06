@@ -1,7 +1,7 @@
 {
   "name": "cestchaud-paris",
   "displayName": "C'est Chaud à Paris",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Ask about Paris: events and their dates, places that stay cool, what is free today, and booking links. Keyless, read-only.",
   "author": {
     "name": "C'est Chaud à Paris",

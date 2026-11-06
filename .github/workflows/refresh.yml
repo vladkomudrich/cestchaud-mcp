@@ -1,9 +1,20 @@
 # Keeps this repository honest about a server it does not contain.
 #
-# The tool tables and the tool count here are stamped from the live catalogue
-# by scripts/generate.mjs. Nothing enforces that anyone re-runs it, and on
-# 26 Oct 2026 a seventh tool shipped and this repository went on documenting
-# six for twelve days. So the machine re-runs it.
+# The tool tables and the tool count in README.md and the skill are stamped
+# from the live catalogue. Nothing enforced that anyone re-ran the stamp, and
+# on 26 Oct 2026 a seventh tool shipped and this repository went on
+# documenting six for twelve days. So the machine re-runs it.
+#
+# WHY THE GENERATOR LIVES IN THIS FILE. It used to be scripts/generate.mjs.
+# The plugin directory accepts only Markdown, text, JSON, YAML and raster
+# images from an unverified publisher, and refused the version that carried a
+# .mjs file. Inlining it here is not a workaround: everything in the plugin
+# folder is shipped to everyone who installs the plugin, and a maintenance
+# script is not something they should receive. A workflow is the right home
+# for it, and YAML is a type the directory reads.
+#
+# To run it by hand, copy the heredoc below into a file and `node` it; it
+# takes BASE from the environment and writes into the working directory.
 #
 # It commits only when the generated output actually changed, so a quiet week
 # leaves no empty commit behind.
@@ -27,8 +38,65 @@ jobs:
         with:
           node-version: 22
 
-      - name: Stamp the tables from https://cestchaud.city/api/agent/v1
-        run: node scripts/generate.mjs
+      - name: Stamp the tables from the catalogue
+        env:
+          BASE: https://cestchaud.city
+        run: |
+          cat > "${RUNNER_TEMP}/generate.mjs" <<'EOF'
+          import { writeFileSync, readFileSync } from "node:fs";
+
+          const BASE = process.env.BASE ?? "https://cestchaud.city";
+          const catalogue = await (await fetch(`${BASE}/api/agent/v1`)).json();
+
+          const toolTable = [
+            "| Tool | What it answers | Arguments |",
+            "| --- | --- | --- |",
+            ...catalogue.capabilities.map((c) => {
+              const args = Object.keys(c.input_schema?.properties ?? {}).join(", ") || "—";
+              return `| \`${c.name}\` | ${c.description} | \`${args}\` |`;
+            }),
+          ].join("\n");
+
+          const restTable = [
+            "| Capability | Endpoint |",
+            "| --- | --- |",
+            ...catalogue.capabilities.map((c) => `| \`${c.name}\` | \`POST ${c.path}\` |`),
+          ].join("\n");
+
+          const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+          const count = catalogue.capabilities.length;
+          const countWord = WORDS[count] ?? String(count);
+
+          const stamp = (file, marks) => {
+            let text = readFileSync(file, "utf8");
+            for (const [name, value] of Object.entries(marks)) {
+              const open = `<!-- ${name}:start -->`;
+              const close = `<!-- ${name}:end -->`;
+              const from = text.indexOf(open);
+              const to = text.indexOf(close);
+              if (from === -1 || to === -1) throw new Error(`${file}: missing ${name} markers`);
+              text = `${text.slice(0, from + open.length)}\n${value}\n${text.slice(to)}`;
+            }
+            writeFileSync(file, text);
+            console.log(`wrote ${file}`);
+          };
+
+          stamp("README.md", {
+            tools: toolTable,
+            rest: restTable,
+            count: `The server exposes **${count} tools**:`,
+          });
+          stamp("skills/cestchaud-paris/SKILL.md", {
+            tools: toolTable,
+            count: `${countWord.replace(/^./, (c) => c.toUpperCase())} tools, no sign-up, nothing that writes.`,
+          });
+          writeFileSync(
+            "server.json",
+            `${JSON.stringify(await (await fetch(`${BASE}/mcp/server.json`)).json(), null, 2)}\n`,
+          );
+          console.log("wrote server.json");
+          EOF
+          node "${RUNNER_TEMP}/generate.mjs"
 
       - name: Commit if anything moved
         run: |
