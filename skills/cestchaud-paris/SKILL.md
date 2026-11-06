@@ -6,7 +6,10 @@ description: Answer questions about what to do in Paris — events tonight or th
 # C'est Chaud à Paris
 
 A keyless, read-only MCP server over the Paris catalogue:
-`https://cestchaud.city/mcp`. Six tools, no sign-up, nothing that writes.
+`https://cestchaud.city/mcp`.
+<!-- count:start -->
+Seven tools, no sign-up, nothing that writes.
+<!-- count:end -->
 
 <!-- tools:start -->
 | Tool | What it answers | Arguments |
@@ -17,6 +20,7 @@ A keyless, read-only MCP server over the Paris catalogue:
 | `get_place` | Returns one place by slug with its address, coordinates, amenities, opening hours and how reliably it stays cool, plus the nearest other places. Use it after search_places, or when you already have a place URL. | `slug, locale` |
 | `search_all` | Searches events, activities, places and guides at once by name or text, for when the kind of thing is not known in advance. Each hit says which kind it is and carries the slug to pass to get_event or get_place. | `query, type, limit, offset` |
 | `moment_now` | Returns the seasonal or cultural moment currently running in Paris — Fashion Week, Christmas, a heatwave — with its hub URL and dates, or the city's seasonal mode when none is running. | `locale` |
+| `esim_plans` | Returns prepaid eSIM data plans that work in France, for a given amount of data and trip length. Each plan carries its price with the date that price was checked, and a booking link. Relevant when a reader is travelling to Paris from outside the EU and needs mobile data on arrival. | `gb, unlimited, days, locale` |
 <!-- tools:end -->
 
 ## Choosing a tool

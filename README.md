@@ -1,56 +1,69 @@
-# C'est Chaud à Paris — MCP server
+<div align="center">
 
-A public [Model Context Protocol](https://modelcontextprotocol.io) server for
-the Paris catalogue behind [cestchaud.city](https://cestchaud.city): events and
-their dates, places and how reliably they stay cool, what is free today, and
-whichever seasonal moment is running.
+<img src="assets/wordmark.png" alt="C'est Chaud à Paris" width="300">
 
-**Read-only. No key. No sign-up.**
+### Paris, for agents
+
+A public [Model Context Protocol](https://modelcontextprotocol.io) server over the
+Paris catalogue behind **[cestchaud.city](https://cestchaud.city)** — events and their
+dates, places and how reliably they stay cool, what is free today, and whichever
+seasonal moment the city is in.
+
+[![MCP registry](https://img.shields.io/badge/MCP%20registry-city.cestchaud%2Fparis-111111)](https://registry.modelcontextprotocol.io)
+[![No key](https://img.shields.io/badge/auth-none-2f6f4e)](https://cestchaud.city/for-agents)
+[![Read only](https://img.shields.io/badge/writes-none-2f6f4e)](#tools)
+[![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE)
 
 ```
 https://cestchaud.city/mcp
 ```
 
-Full documentation: **[cestchaud.city/for-agents](https://cestchaud.city/for-agents)**
-· Also listed in the [official MCP registry](https://registry.modelcontextprotocol.io)
-as `city.cestchaud/paris`.
+**Read-only. No key. No sign-up.**
+
+[Documentation](https://cestchaud.city/for-agents) ·
+[Tools](#tools) ·
+[REST twin](#rest-twin) ·
+[What the data asks of you](#two-things-the-data-asks-of-you) ·
+[Licence](#data-and-licence)
+
+</div>
 
 ---
 
-## Quick start
+## Install
 
-Paste this to your assistant and let it do the rest:
+In Claude Code, one line:
 
 ```
-Add this MCP server to your tools: https://cestchaud.city/mcp
-
-It is a public, read-only server with no key and no authentication, over
-streamable HTTP. It gives you the Paris catalogue behind C'est Chaud à Paris:
-events and their dates, places, free and discounted things, and whichever
-seasonal moment is running.
-
-Then:
-1. Call tools/list and summarise what it offers.
-2. When I ask you about Paris — what's on tonight, where to work somewhere
-   cool, what to do this weekend — use it.
-
-Two things its data asks of you:
-— if a record has booking.disclosure.required = true, show the text in
-  booking.disclosure.text wherever you show the link;
-— credit the sources listed in the attribution field.
+/plugin install cestchaud-paris --marketplace vladkomudrich/cestchaud-mcp
 ```
 
-### Or configure it by hand
+That installs both halves: the MCP server above, and a skill that teaches an
+agent to use it well — which tool answers which question, and the three
+obligations the data carries. Requires Claude Code 2.1.275 or later.
 
-**Claude** — custom connector, or `.mcp.json`:
+Everywhere else, add the endpoint and let your assistant read `tools/list`:
+
+### By hand
+
+**Any client with a JSON config** — `.mcp.json`, `claude_desktop_config.json`
+or your client's equivalent:
 
 ```json
 {
   "mcpServers": {
-    "cestchaud-paris": { "url": "https://cestchaud.city/mcp" }
+    "cestchaud-paris": {
+      "type": "http",
+      "url": "https://cestchaud.city/mcp"
+    }
   }
 }
 ```
+
+> **`type` is not optional.** An entry with a `url` and no `type` is read as a
+> stdio server, fails for having no `command`, and is dropped — in Claude Code,
+> silently. Earlier versions of this README omitted it. If the server never
+> appears, this is why.
 
 **A client that only speaks stdio** — [`mcp-remote`](https://www.npmjs.com/package/mcp-remote)
 bridges it. We publish no npm package of our own, because it would contain
@@ -75,9 +88,36 @@ curl -s -o /dev/null -w '%{http_code}\n' \
   -H 'Accept: application/json' https://cestchaud.city/mcp
 ```
 
+### Or just describe it
+
+Paste this to your assistant and let it do the rest:
+
+```
+Add this MCP server to your tools: https://cestchaud.city/mcp
+
+It is a public, read-only server with no key and no authentication, over
+streamable HTTP. It gives you the Paris catalogue behind C'est Chaud à Paris:
+events and their dates, places, free and discounted things, and whichever
+seasonal moment is running.
+
+Then:
+1. Call tools/list and summarise what it offers.
+2. When I ask you about Paris — what's on tonight, where to work somewhere
+   cool, what to do this weekend — use it.
+
+Two things its data asks of you:
+— if a record has booking.disclosure.required = true, show the text in
+  booking.disclosure.text wherever you show the link;
+— credit the sources listed in the attribution field.
+```
+
 ---
 
 ## Tools
+
+<!-- count:start -->
+The server exposes **7 tools**:
+<!-- count:end -->
 
 <!-- tools:start -->
 | Tool | What it answers | Arguments |
@@ -88,6 +128,7 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 | `get_place` | Returns one place by slug with its address, coordinates, amenities, opening hours and how reliably it stays cool, plus the nearest other places. Use it after search_places, or when you already have a place URL. | `slug, locale` |
 | `search_all` | Searches events, activities, places and guides at once by name or text, for when the kind of thing is not known in advance. Each hit says which kind it is and carries the slug to pass to get_event or get_place. | `query, type, limit, offset` |
 | `moment_now` | Returns the seasonal or cultural moment currently running in Paris — Fashion Week, Christmas, a heatwave — with its hub URL and dates, or the city's seasonal mode when none is running. | `locale` |
+| `esim_plans` | Returns prepaid eSIM data plans that work in France, for a given amount of data and trip length. Each plan carries its price with the date that price was checked, and a booking link. Relevant when a reader is travelling to Paris from outside the EU and needs mobile data on arrival. | `gb, unlimited, days, locale` |
 <!-- tools:end -->
 
 Every tool is read-only. Nothing here writes, books, pays or changes anything,
@@ -110,6 +151,7 @@ same code underneath: same limits, same errors, same answers.
 | `get_place` | `POST /api/agent/v1/get-place` |
 | `search_all` | `POST /api/agent/v1/search-all` |
 | `moment_now` | `POST /api/agent/v1/moment-now` |
+| `esim_plans` | `POST /api/agent/v1/esim-plans` |
 <!-- rest:end -->
 
 `GET https://cestchaud.city/api/agent/v1` returns the machine-readable
@@ -172,6 +214,27 @@ inside an answer you write.
 
 ---
 
+## The same catalogue, read by a person
+
+Every record a tool returns carries a `url`, and that page holds what does not
+fit in a payload: the map, the opening hours, the photographs, the sources. If
+you are deciding whether this data is worth wiring up, these are the pages it
+is made of:
+
+| | |
+| --- | --- |
+| [What's on this weekend](https://cestchaud.city/events/ce-week-end) | The dated agenda, rolling — the same rows `search_events` returns |
+| [Things to do in Paris](https://cestchaud.city/activites) | The evergreen half: activities that are not tied to a date |
+| [Places](https://cestchaud.city/places) | Cafés, parks, pools, libraries, with amenities and how cool they stay |
+| [Guides](https://cestchaud.city/guides) | Our own editorial writing, where a list is not the answer |
+| [For agents](https://cestchaud.city/for-agents) | The full technical documentation this README summarises |
+| [Affiliate policy](https://cestchaud.city/legal/affiliate) | What a partner link is, and what it does not buy |
+
+The site is in French, English and Spanish; the `locale` argument picks which
+prose a tool returns.
+
+---
+
 ## Data and licence
 
 Places and events come from Ville de Paris open data, including the
@@ -181,11 +244,21 @@ editorial work. ODbL requires attribution wherever the data is used.
 The code and documentation in *this repository* are MIT (see `LICENSE`). That
 licence covers the examples, not the catalogue the server returns.
 
+The brand mark in `assets/` and the icon in `.claude-plugin/` are ours and are
+not covered by that licence.
+
 ## Contents
 
 | | |
 | --- | --- |
 | `skills/cestchaud-paris/` | An agent skill: how to use these tools well |
+| `.claude-plugin/` | Marketplace and plugin manifests — what `/plugin install` reads |
+| `.mcp.json` | The server entry, in the shape a client config wants |
 | `examples/` | curl calls you can paste |
 | `server.json` | The MCP registry manifest |
 | `scripts/generate.mjs` | Regenerates the tables above from the live catalogue |
+
+Every table and count in this README is stamped from
+`GET https://cestchaud.city/api/agent/v1` by that script, which a weekly
+workflow re-runs. Nothing here states a fact about the server by hand — the
+one sentence that did drifted for twelve days when a seventh tool shipped.

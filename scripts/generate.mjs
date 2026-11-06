@@ -6,6 +6,13 @@
 // that drifts the first time a tool changes, and a developer reading it has no
 // way to tell a stale table from a current one.
 //
+// It drifted anyway, which is why the tool COUNT is stamped too. The tables
+// were generated and the sentence above them read "Six tools" in prose; when
+// esim_plans shipped on 26 Oct 2026 the table grew and the sentence did not,
+// and the repo contradicted itself for twelve days. A number written by hand
+// beside a generated table is the same second source of truth, just smaller.
+// Nothing here states a fact about the server that is not stamped.
+//
 //   node scripts/generate.mjs
 import { writeFileSync, readFileSync } from "node:fs";
 
@@ -20,6 +27,10 @@ const toolTable = [
     return `| \`${c.name}\` | ${c.description} | \`${args}\` |`;
   }),
 ].join("\n");
+
+const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+const count = catalogue.capabilities.length;
+const countWord = WORDS[count] ?? String(count);
 
 const restTable = [
   "| Capability | Endpoint |",
@@ -41,7 +52,10 @@ const stamp = (file, marks) => {
   console.log(`wrote ${file}`);
 };
 
-stamp("README.md", { tools: toolTable, rest: restTable });
-stamp("skills/cestchaud-paris/SKILL.md", { tools: toolTable });
+stamp("README.md", { tools: toolTable, rest: restTable, count: `The server exposes **${count} tools**:` });
+stamp("skills/cestchaud-paris/SKILL.md", {
+  tools: toolTable,
+  count: `${countWord.replace(/^./, (c) => c.toUpperCase())} tools, no sign-up, nothing that writes.`,
+});
 writeFileSync("server.json", `${JSON.stringify(await (await fetch(`${BASE}/mcp/server.json`)).json(), null, 2)}\n`);
 console.log("wrote server.json");

@@ -1,0 +1,8 @@
+# This repository is public. Nothing that is not hand-written documentation,
+# a manifest, or output of scripts/generate.mjs belongs in it.
+node_modules/
+.mcpb-cache/
+.DS_Store
+*.log
+.env
+.env.*

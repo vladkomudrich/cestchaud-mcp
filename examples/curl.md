@@ -25,8 +25,15 @@ curl -s -H 'Content-Type: application/json' \
      "$BASE/mcp"
 ```
 
-Responses come back as `text/event-stream`; strip the `data: ` prefix to get
-the JSON.
+Responses come back as `text/event-stream`: an `event:` line, then a `data:`
+line holding the JSON. Keep the `data:` lines and drop their prefix —
+
+```bash
+… | sed -n 's/^data: //p' | jq
+```
+
+Dropping only the `data: ` prefix without discarding the `event:` line leaves
+you with something that is not JSON.
 
 ## REST twin
 

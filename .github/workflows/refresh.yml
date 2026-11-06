@@ -1,0 +1,43 @@
+# Keeps this repository honest about a server it does not contain.
+#
+# The tool tables and the tool count here are stamped from the live catalogue
+# by scripts/generate.mjs. Nothing enforces that anyone re-runs it, and on
+# 26 Oct 2026 a seventh tool shipped and this repository went on documenting
+# six for twelve days. So the machine re-runs it.
+#
+# It commits only when the generated output actually changed, so a quiet week
+# leaves no empty commit behind.
+name: Refresh from the live catalogue
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Monday morning, off the hour: scheduled runs queue
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Stamp the tables from https://cestchaud.city/api/agent/v1
+        run: node scripts/generate.mjs
+
+      - name: Commit if anything moved
+        run: |
+          if git diff --quiet; then
+            echo "Catalogue unchanged — nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md skills/cestchaud-paris/SKILL.md server.json
+          git commit -m "The catalogue moved, and the tables follow"
+          git push

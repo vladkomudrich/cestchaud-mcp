@@ -1,0 +1,12 @@
+{
+  "name": "cestchaud",
+  "description": "Paris, for agents: the C'est Chaud a Paris catalogue as a skill and a keyless MCP server.",
+  "owner": { "name": "C'est Chaud a Paris", "url": "https://cestchaud.city" },
+  "plugins": [
+    {
+      "name": "cestchaud-paris",
+      "source": "./",
+      "description": "Events, places, free things and booking links for Paris. Read-only, no key, no sign-up."
+    }
+  ]
+}
